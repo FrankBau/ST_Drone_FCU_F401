@@ -4,6 +4,7 @@
 *.pbi
 *.pbd
 *.o
+*.su
 *.d
 *.dep
 *.xcl

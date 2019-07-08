@@ -16,6 +16,7 @@ int myprintf(const char *format, ...)
     // Limit the length of string to 254
     len = vsnprintf(temp, 254, format, arg);
     usart_puts(temp, len);
+//    CDC_Transmit_FS( temp, len );
     return len;
 }
     

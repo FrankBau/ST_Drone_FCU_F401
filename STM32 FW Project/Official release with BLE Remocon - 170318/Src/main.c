@@ -560,6 +560,8 @@ int32_t BytesToWrite;
     /* Magnetometer data on UART for debug*/
     //PRINTF("Magnetometer X = %d\tY = %d\tZ = %d\n\n", mag.AXIS_X, mag.AXIS_Y, mag.AXIS_Z);  
 
+      /* Remocon ELE, AIL, RUD, THR, Motor1_pwm, AHRS Euler angle x and y axis */
+      PRINTF("%10.2f\t%10.2f\t%10.2f\t%10.2f\t%10.2f\n", motor_pwm.motor1_pwm, euler_ahrs.thx * 57.3f, euler_ahrs.thy * 57.3f, euler_rc.thx * 57.3f, euler_rc.thy * 57.3f);
 
     }
 
@@ -1322,7 +1324,13 @@ static void SendArmingData(void)
 }
 
 
-
+void Error_Handler()
+{
+	while(1) {
+		HAL_GPIO_TogglePin( LED1_GPIO_PORT, LED1_PIN );
+		HAL_Delay(100);
+	}
+}
 /* USER CODE END 4 */
 
 #ifdef USE_FULL_ASSERT
