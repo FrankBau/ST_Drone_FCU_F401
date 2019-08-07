@@ -279,7 +279,7 @@ int32_t BytesToWrite;
   MX_TIM4_Init();
   MX_TIM9_Init();
   MX_USART1_UART_Init();
-  //MX_USB_DEVICE_Init();
+  MX_USB_DEVICE_Init();
  
   /* USER CODE BEGIN 2 */
 
@@ -561,7 +561,7 @@ int32_t BytesToWrite;
     //PRINTF("Magnetometer X = %d\tY = %d\tZ = %d\n\n", mag.AXIS_X, mag.AXIS_Y, mag.AXIS_Z);  
 
       /* Remocon ELE, AIL, RUD, THR, Motor1_pwm, AHRS Euler angle x and y axis */
-      PRINTF("%10.2f\t%10.2f\t%10.2f\t%10.2f\t%10.2f\n", motor_pwm.motor1_pwm, euler_ahrs.thx * 57.3f, euler_ahrs.thy * 57.3f, euler_rc.thx * 57.3f, euler_rc.thy * 57.3f);
+      //PRINTF("%10.2f\t%10.2f\t%10.2f\t%10.2f\t%10.2f\n", motor_pwm.motor1_pwm, euler_ahrs.thx * 57.3f, euler_ahrs.thy * 57.3f, euler_rc.thx * 57.3f, euler_rc.thy * 57.3f);
 
     }
 
@@ -1233,19 +1233,20 @@ static void Init_BlueNRG_Custom_Services(void)
      PRINTF("\r\nError while adding HW Service W2ST\r\n");
   }
 
-  ret = Add_ConsoleW2ST_Service();
-  if(ret == BLE_STATUS_SUCCESS) {
-     PRINTF("Console Service W2ST added successfully\r\n");
-  } else {
-     PRINTF("\r\nError while adding Console Service W2ST\r\n");
-  }
-
-  ret = Add_ConfigW2ST_Service();
-  if(ret == BLE_STATUS_SUCCESS) {
-     PRINTF("Config  Service W2ST added successfully\r\n");
-  } else {
-     PRINTF("\r\nError while adding Config Service W2ST\r\n");
-  }
+// these were already added during BlueNRG_Init
+//  ret = Add_ConsoleW2ST_Service();
+//  if(ret == BLE_STATUS_SUCCESS) {
+//     PRINTF("Console Service W2ST added successfully\r\n");
+//  } else {
+//     PRINTF("\r\nError while adding Console Service W2ST\r\n");
+//  }
+//
+//  ret = Add_ConfigW2ST_Service();
+//  if(ret == BLE_STATUS_SUCCESS) {
+//     PRINTF("Config  Service W2ST added successfully\r\n");
+//  } else {
+//     PRINTF("\r\nError while adding Config Service W2ST\r\n");
+//  }
 }
 
 /**

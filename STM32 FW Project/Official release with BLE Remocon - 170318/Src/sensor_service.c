@@ -50,6 +50,8 @@
 #include "uuid_ble_service.h"
 #include "steval_fcu001_v1_pressure.h"
 
+#include "debug.h"
+
 /* Exported variables ---------------------------------------------------------*/
 int connected = FALSE;
 uint8_t set_connectable = TRUE;
@@ -153,6 +155,8 @@ tBleStatus Add_ConfigW2ST_Service(void)
   COPY_CONFIG_SERVICE_UUID(uuid);
   ret = aci_gatt_add_serv(UUID_TYPE_128,  uuid, PRIMARY_SERVICE, 1+3,&ConfigServW2STHandle);
 
+  PRINTF("Add_ConfigW2ST_Service ConfigServW2STHandle=0x%02x\n",ConfigServW2STHandle);
+
   if (ret != BLE_STATUS_SUCCESS)
     goto fail;
 
@@ -162,6 +166,8 @@ tBleStatus Add_ConfigW2ST_Service(void)
                            ATTR_PERMISSION_NONE,
                            GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                            16, 1, &ConfigCharHandle);
+
+  PRINTF("Add_ConfigW2ST_Service ConfigCharHandle=0x%02x\n",ConfigCharHandle);
 
   if (ret != BLE_STATUS_SUCCESS) {
     goto fail;
@@ -189,6 +195,8 @@ tBleStatus Add_ConsoleW2ST_Service(void)
   COPY_CONSOLE_SERVICE_UUID(uuid);
   ret = aci_gatt_add_serv(UUID_TYPE_128,  uuid, PRIMARY_SERVICE, 1+3*2,&ConsoleW2STHandle);
 
+  PRINTF("Add_ConsoleW2ST_Service ConsoleW2STHandle=0x%02x\n",ConsoleW2STHandle);
+
   if (ret != BLE_STATUS_SUCCESS) {
     goto fail;
   }
@@ -200,6 +208,8 @@ tBleStatus Add_ConsoleW2ST_Service(void)
                            GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                            16, 1, &TermCharHandle);
 
+  PRINTF("Add_ConsoleW2ST_Service TermCharHandle=0x%02x\n",TermCharHandle);
+
   if (ret != BLE_STATUS_SUCCESS) {
     goto fail;
   }
@@ -210,6 +220,8 @@ tBleStatus Add_ConsoleW2ST_Service(void)
                            ATTR_PERMISSION_NONE,
                            GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                            16, 1, &StdErrCharHandle);
+
+  PRINTF("Add_ConsoleW2ST_Service StdErrCharHandle=0x%02x\n",StdErrCharHandle);
 
   if (ret != BLE_STATUS_SUCCESS) {
      goto fail;
@@ -243,6 +255,8 @@ tBleStatus Stderr_Update(uint8_t *data,uint8_t length)
     memcpy(LastStderrBuffer,data+Offset,DataToSend);
     LastStderrLen = DataToSend;
 
+    PRINTF("Stderr_Update( \"%s\", %d );\n", data, length );
+
     ret = aci_gatt_update_char_value(ConsoleW2STHandle, StdErrCharHandle, 0, DataToSend , data+Offset);
     if (ret != BLE_STATUS_SUCCESS) {
       return BLE_STATUS_ERROR;
@@ -275,6 +289,8 @@ tBleStatus Term_Update(uint8_t *data,uint8_t length)
     memcpy(LastTermBuffer,data+Offset,DataToSend);
     LastTermLen = DataToSend;
 
+    PRINTF("Term_Update( \"%s\", %d );\n", data, length );
+
     ret = aci_gatt_update_char_value(ConsoleW2STHandle, TermCharHandle, 0, DataToSend , data+Offset);
     if (ret != BLE_STATUS_SUCCESS) {
         PRINTF("Error Updating Stdout Char\r\n");
@@ -295,6 +311,8 @@ static tBleStatus Stderr_Update_AfterRead(void)
 {
   tBleStatus ret;
 
+  PRINTF("Stderr_Update_AfterRead();\n" );
+
   ret = aci_gatt_update_char_value(ConsoleW2STHandle, StdErrCharHandle, 0, LastStderrLen , LastStderrBuffer);
   if (ret != BLE_STATUS_SUCCESS) {
     return BLE_STATUS_ERROR;
@@ -312,6 +330,8 @@ static tBleStatus Term_Update_AfterRead(void)
 {
   tBleStatus ret;
 
+  PRINTF("Term_Update_AfterRead();\n" );
+
   ret = aci_gatt_update_char_value(ConsoleW2STHandle, TermCharHandle, 0, LastTermLen , LastTermBuffer);
   if (ret != BLE_STATUS_SUCCESS) {
     if(W2ST_CHECK_CONNECTION(W2ST_CONNECT_STD_ERR)){
@@ -325,6 +345,8 @@ static tBleStatus Term_Update_AfterRead(void)
 
   return BLE_STATUS_SUCCESS;
 }
+
+#if 0
 /* @brief  Send a notification for answering to a configuration command for Accelerometer events
  * @param  uint32_t Feature Feature calibrated
  * @param  uint8_t Command Replay to this Command
@@ -341,6 +363,8 @@ tBleStatus Config_Notify(uint32_t Feature,uint8_t Command,uint8_t data)
   buff[6] = Command;
   buff[7] = data;
 
+  PRINTF("Config_Notify( %d, %d, %d );\n", Feature, Command, data );
+
   ret = aci_gatt_update_char_value (ConfigServW2STHandle, ConfigCharHandle, 0, 8,buff);
   if (ret != BLE_STATUS_SUCCESS){
     if(W2ST_CHECK_CONNECTION(W2ST_CONNECT_STD_ERR)){
@@ -353,7 +377,9 @@ tBleStatus Config_Notify(uint32_t Feature,uint8_t Command,uint8_t data)
   }
   return BLE_STATUS_SUCCESS;
 }
+#endif
 
+#if 0
 /**
  * @brief  Send a notification When the DS3 detects one Acceleration event
  * @param  Command to Send
@@ -367,6 +393,8 @@ tBleStatus AccEvent_Notify(uint16_t Command)
   STORE_LE_16(buff  ,(HAL_GetTick()>>3));
   STORE_LE_16(buff+2,Command);
 
+  PRINTF("AccEvent_Notify( %d);\n", Command );
+
   ret = aci_gatt_update_char_value(HWServW2STHandle, AccEventCharHandle, 0, 2+2,buff);
   if (ret != BLE_STATUS_SUCCESS){
     if(W2ST_CHECK_CONNECTION(W2ST_CONNECT_STD_ERR)){
@@ -379,6 +407,7 @@ tBleStatus AccEvent_Notify(uint16_t Command)
   }
   return BLE_STATUS_SUCCESS;
 }
+#endif
 
 /**
  * @brief  Add the HW Features service using a vendor specific profile
@@ -403,6 +432,8 @@ tBleStatus Add_HWServW2ST_Service(void)
   ret = aci_gatt_add_serv(UUID_TYPE_128,  uuid, PRIMARY_SERVICE,
                           1+3*NumberChars,
                           &HWServW2STHandle);
+
+  PRINTF("Add_HWServW2ST_Service HWServW2STHandle=0x%02x\n",HWServW2STHandle);
 
   if (ret != BLE_STATUS_SUCCESS) {
     goto fail;
@@ -449,6 +480,8 @@ tBleStatus Add_HWServW2ST_Service(void)
                            GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                            16, 0, &EnvironmentalCharHandle);
 
+  PRINTF("Add_HWServW2ST_Service EnvironmentalCharHandle=0x%02x\n",EnvironmentalCharHandle);
+
   if (ret != BLE_STATUS_SUCCESS) {
     goto fail;
   }
@@ -460,6 +493,7 @@ tBleStatus Add_HWServW2ST_Service(void)
                            GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                            16, 0, &AccGyroMagCharHandle);
 
+  PRINTF("Add_HWServW2ST_Service AccGyroMagCharHandle=0x%02x\n",AccGyroMagCharHandle);
   if (ret != BLE_STATUS_SUCCESS) {
     goto fail;
   }
@@ -471,6 +505,7 @@ tBleStatus Add_HWServW2ST_Service(void)
                            GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                            16, 0, &AccEventCharHandle);
 
+  PRINTF("Add_HWServW2ST_Service AccEventCharHandle=0x%02x\n",AccEventCharHandle);
   if (ret != BLE_STATUS_SUCCESS) {
     goto fail;
   }
@@ -482,6 +517,7 @@ tBleStatus Add_HWServW2ST_Service(void)
                            GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                            16, 0, &ArmingCharHandle);
 
+  PRINTF("Add_HWServW2ST_Service ArmingCharHandle=0x%02x\n",ArmingCharHandle);
   if (ret != BLE_STATUS_SUCCESS) {
     goto fail;
   }
@@ -509,7 +545,8 @@ tBleStatus Add_HWServW2ST_Service(void)
                            ATTR_PERMISSION_NONE,
                            GATT_NOTIFY_ATTRIBUTE_WRITE,
                            16, 0, &MaxCharHandle);
-	
+
+  PRINTF("Add_HWServW2ST_Service MaxCharHandle=0x%02x\n",MaxCharHandle);
   if (ret != BLE_STATUS_SUCCESS) {
     goto fail;
   }
@@ -649,22 +686,32 @@ tBleStatus ARMING_Update(uint8_t ArmingStatus)
  */
 void setConnectable(void)
 {  
-  char local_name[8] = {AD_TYPE_COMPLETE_LOCAL_NAME,NAME_DRN};
-  uint8_t manuf_data[26] = {
-    2,0x0A,0x00 /* 0 dBm */, // Trasmission Power
-    8,0x09,NAME_DRN, // Complete Name
-    13,0xFF,0x01/*SKD version */,
-    0x80,
-    0x00, /* */
-    0xE0, /* ACC+Gyro+Mag*/
-    0x00, /*  */
-    0x00, /*  */
-    0x00, /* BLE MAC start */
+	// see https://github.com/STMicroelectronics/BlueSTSDK_Android#advertise
+	char local_name[8] = {AD_TYPE_COMPLETE_LOCAL_NAME,NAME_DRN};
+	uint8_t manuf_data[26] = {
+
+	2,
+	0x0A, // field type: Transmission Power
+	0x00, /* 0 dBm */
+
+	8,
+	0x09,
+	NAME_DRN, // Complete Name
+
+    13, 	// field length
+	0xFF, 	// field type
+	0x01, 	// BlueST SDK version
+    0x80,	// device ID (type)
+    0x00, 	// feature mask
+    0xE0, 	// feature mask: ACC+Gyro+Mag
+    0x00, 	//
+    0x00, 	//
+    0x00, 	/* BLE MAC start */
     0x00,
     0x00,
     0x00,
     0x00,
-    0x00, /* BLE MAC stop */
+    0x00, 	/* BLE MAC stop */
   };
 
   /* BLE MAC */
@@ -761,6 +808,8 @@ static void GAP_DisconnectionComplete_CB(void)
  */
 void Read_Request_CB(uint16_t handle)
 {
+	PRINTF("Read_Request_CB(0x%02x\n", handle );
+
   uint8_t Status;  
   if(handle == EnvironmentalCharHandle + 1){
     /* Read Request for Pressure,Battery, and Temperatures*/
@@ -811,6 +860,8 @@ void Read_Request_CB(uint16_t handle)
  */
 void Attribute_Modified_CB(uint16_t attr_handle, uint8_t * att_data, uint8_t data_length) 
 {
+	PRINTF("Attribute_Modified_CB(0x%02x\n", attr_handle );
+
   if(attr_handle == ConfigCharHandle + 2) 
   {
     ;/* do nothing... only for removing the message "Notification UNKNOW handle" */
